@@ -43,7 +43,12 @@ public class InterconnectionsOneStopService implements InterconnectionsService{
         }
     }
 
-
+    /**
+     * Verify if there is, at least, one route in the search
+     * @param directRoute the only direct route
+     * @param oneStopRoutes a list of one stop routes
+     * @throws NoRoutesFoundException with not found code (404) if the search does not found any available route
+     */
     private void checkEmptyRoutes(Route directRoute, List<Route> oneStopRoutes) throws NoRoutesFoundException{
         if (directRoute == null && oneStopRoutes.isEmpty()) {
             throw new NoRoutesFoundException();
@@ -79,6 +84,7 @@ public class InterconnectionsOneStopService implements InterconnectionsService{
         // Check if there are no routes available
         checkEmptyRoutes(directRoute, interconnectedRoutes);
 
+        // Get all the flights
         List<FlightResponse> allFlights = schedulesOneStopService.getFlightsForRoutes(
                 interconnectedRoutes,
                 directRoute,

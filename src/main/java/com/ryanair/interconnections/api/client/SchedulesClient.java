@@ -9,6 +9,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 
+/**
+ * Class that represents the Routes API, using WebClient to communicate with the API
+ */
 @Service
 public class SchedulesClient {
 

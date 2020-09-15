@@ -7,9 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+
+/**
+ * Service that makes all the route logic in the interconnections service
+ */
 @Service
 public class RoutesOneStopService implements RoutesService{
 
@@ -40,6 +45,10 @@ public class RoutesOneStopService implements RoutesService{
         return route.getAirportFrom().equals(departure) && route.getAirportTo().equals(arrival);
     }
 
+    /**
+     * Add a route in an airport of the map. If the airport does not exist, it creates a new Airport with the route
+     * @param route the route to add
+     */
     private void addRouteToAirportMap(Route route) {
         // if the airport exists in the map, just add a new route
         if (airportMap.containsKey(route.getAirportFrom())) {
@@ -57,8 +66,15 @@ public class RoutesOneStopService implements RoutesService{
         this.airportMap = new HashMap<>();
     }
 
+    /**
+     * From a departure airport and an arrival airport, get a direct route between them
+     * @param departure the departure airport
+     * @param arrival the arrival airport
+     * @return the direct route between the airports, or null if the route does not exist
+     */
     public Route getDirectRoute(String departure, String arrival) {
-        return routesClient.getRoutes()
+        return routesClient
+                .getRoutes()
                 .stream()
                 .filter(route -> filterValidRoutes(route.getConnectingAirport(), route.getOperator()))
                 .filter(route -> filterDirectRoute(route, departure, arrival))
@@ -75,7 +91,8 @@ public class RoutesOneStopService implements RoutesService{
     @Override
     public List<Route> getInterconnectedRoutes(String departure, String arrival) {
         // Search all the routes to store each route to the airports map
-        routesClient.getRoutes()
+        routesClient
+                .getRoutes()
                 .stream()
                 .filter(route -> filterValidRoutes(route.getConnectingAirport(), route.getOperator()))
                 .forEach(validRoute -> addRouteToAirportMap(validRoute));

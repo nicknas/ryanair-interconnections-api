@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service that makes all the schedule logic in the interconnections service
+ */
 @Service
 public class SchedulesOneStopService implements SchedulesService{
 
@@ -29,17 +32,17 @@ public class SchedulesOneStopService implements SchedulesService{
     }
 
     /**
-     * Check if the interconnected flights checks the following requirements: <br/>
-     * * The interconnected flights are not earlier than the departure time and not later than the arrival time <br/>
-     * * The difference between the arrival of the first flight and the departure of the second flight is 2 hours or greater
+     * Check if the one stop flights checks the following requirements: <br/>
+     * * The one stop flights are not earlier than the departure time and not later than the arrival time <br/>
+     * * The difference between the arrival of the first leg flight and the departure of the second leg flight is 2 hours or greater
      *
      * @param departureDateTime the departure time limit
      * @param arrivalDateTime the arrival time limit
-     * @param departureDateTimeDepartureAirport the departure time of the first flight
-     * @param arrivalDateTimeDepartureAirport the arrival time of the first flight
-     * @param departureDateTimeArrivalAirport the departure time of the second flight
-     * @param arrivalDateTimeArrivalAirport the arrival time of the second flight
-     * @return a boolean result that determines if the interconnected flights meet with the requirements above
+     * @param departureDateTimeDepartureAirport the departure time of the first leg flight
+     * @param arrivalDateTimeDepartureAirport the arrival time of the first leg flight
+     * @param departureDateTimeArrivalAirport the departure time of the second leg flight
+     * @param arrivalDateTimeArrivalAirport the arrival time of the second leg flight
+     * @return a boolean result that determines if the one stop flights meet with the requirements above
      */
     private boolean isValidOneStopSchedule(LocalDateTime departureDateTime,
                                                         LocalDateTime arrivalDateTime,
@@ -86,7 +89,8 @@ public class SchedulesOneStopService implements SchedulesService{
 
         directSchedule.getDays()
                 .forEach(day -> day.getFlights()
-                .forEach(flight -> addDirectFlightToList(flightResponseList,
+                .forEach(flight -> addDirectFlightToList(
+                        flightResponseList,
                         route,
                         departureDateTime,
                         arrivalDateTime,
@@ -97,6 +101,16 @@ public class SchedulesOneStopService implements SchedulesService{
         return flightResponseList;
     }
 
+    /**
+     * Add a direct flight to the flight response list, if meets with the requirements
+     * @param flightResponseList the list of flight response
+     * @param route a direct route
+     * @param departureDateTime the departure time
+     * @param arrivalDateTime the arrival time
+     * @param departureDateTimeAux the departure time of the flight to add
+     * @param day a day object that represents the day of the flight
+     * @param flight a flight object that represents the flight to add
+     */
     private void addDirectFlightToList(List<FlightResponse> flightResponseList,
                                  Route route,
                                  LocalDateTime departureDateTime,
@@ -125,15 +139,15 @@ public class SchedulesOneStopService implements SchedulesService{
     }
 
     /**
-     * Make a List of all the interconnected flights to store in the interconnections response
+     * Make a List of all the one stop flights to store in the interconnections response
      *
      * @param routes a list of interconnected routes
      * @param departureAirport the departure airport IATA code
      * @param arrivalAirport the arrival airport IATA code
      * @param departureDateTime the departure time limit
      * @param arrivalDateTime the arrival time limit
-     * @param departureDateTimeAux the departure time of the interconnected flights
-     * @return a List of all the interconnected flights
+     * @param departureDateTimeAux the departure time of the one stop flights
+     * @return a List of all the one stop flights
      */
     private List<FlightResponse> getOneStopFlights(List<Route> routes, String departureAirport, String arrivalAirport, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime, LocalDateTime departureDateTimeAux) {
         List<FlightResponse> flightResponseList = new ArrayList<>();
@@ -148,7 +162,6 @@ public class SchedulesOneStopService implements SchedulesService{
                 .filter(route -> route.getAirportTo().equals(arrivalAirport))
                 .collect(Collectors.toList());
 
-
         // Each of the indexes matches with the complete route, so iterate over the same loop
         for (int i = 0; i < firstLegRoutes.size(); i++) {
             Route firstLegRoute = firstLegRoutes.get(i);
@@ -158,11 +171,13 @@ public class SchedulesOneStopService implements SchedulesService{
             Schedule firstLegSchedule = schedulesClient.getSchedule(firstLegRoute, departureDateTimeAux);
             Schedule secondLegSchedule = schedulesClient.getSchedule(secondLegRoute, departureDateTimeAux);
 
-            firstLegSchedule.getDays()
+            firstLegSchedule
+                    .getDays()
                     .forEach(firstLegDay -> firstLegDay.getFlights()
                     .forEach(firstLegFlight -> secondLegSchedule.getDays()
                     .forEach(secondLegDay -> secondLegDay.getFlights()
-                    .forEach(secondLegFlight -> addOneStopFlightToList(flightResponseList,
+                    .forEach(secondLegFlight -> addOneStopFlightToList(
+                            flightResponseList,
                             firstLegRoute,
                             secondLegRoute,
                             departureDateTime,
@@ -177,6 +192,19 @@ public class SchedulesOneStopService implements SchedulesService{
         return flightResponseList;
     }
 
+    /**
+     * Add a one stop flight to the flight response list, if meets with the requirements
+     * @param flightResponseList the list of flight response
+     * @param firstLegRoute the route of the first leg
+     * @param secondLegRoute the route of the second leg
+     * @param departureDateTime the departure time
+     * @param arrivalDateTime the arrival time
+     * @param departureDateTimeAux the departure time of the flight to add
+     * @param firstLegDay a day object that represents the day of the first leg flight
+     * @param secondLegDay a day object that represents the day of the second leg flight
+     * @param firsLegFlight a flight object that represents the first leg flight to add
+     * @param secondLegFlight a flight object that represents the second leg flight to add
+     */
     private void addOneStopFlightToList(List<FlightResponse> flightResponseList,
                                         Route firstLegRoute,
                                         Route secondLegRoute,
@@ -222,7 +250,7 @@ public class SchedulesOneStopService implements SchedulesService{
     }
 
     /**
-     * Search for flights, either if the routes are direct flights or interconnected flights
+     * Search for all the flights
      *
      * @param oneStopRoutes a list of one stop routes
      * @param directRoute the only direct route
