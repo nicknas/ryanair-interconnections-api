@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +98,11 @@ public class RoutesOneStopService implements RoutesService{
                 .filter(route -> filterValidRoutes(route.getConnectingAirport(), route.getOperator()))
                 .forEach(validRoute -> addRouteToAirportMap(validRoute));
 
-        return airportMap.get(departure).findInterconnectedRoutes(airportMap, arrival);
+        if (airportMap.containsKey(departure)) {
+            return airportMap.get(departure).findInterconnectedRoutes(airportMap, arrival);
+        }
+        else {
+            return new ArrayList<>();
+        }
     }
 }
