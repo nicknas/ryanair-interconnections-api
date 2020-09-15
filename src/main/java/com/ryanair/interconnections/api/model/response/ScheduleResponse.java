@@ -15,6 +15,16 @@ public class ScheduleResponse {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime arrivalDateTime;
 
+    public ScheduleResponse(String departureAirport,
+                            String arrivalAirport,
+                            LocalDateTime departureDateTime,
+                            LocalDateTime arrivalDateTime) {
+        this.departureAirport = departureAirport;
+        this.arrivalAirport = arrivalAirport;
+        this.departureDateTime = departureDateTime;
+        this.arrivalDateTime = arrivalDateTime;
+    }
+
     public String getDepartureAirport() {
         return departureAirport;
     }

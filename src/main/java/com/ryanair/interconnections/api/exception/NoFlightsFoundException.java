@@ -1,4 +1,4 @@
-package com.ryanair.interconnections.api.model.exception;
+package com.ryanair.interconnections.api.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;

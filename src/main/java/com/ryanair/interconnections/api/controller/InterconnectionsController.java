@@ -1,7 +1,7 @@
 package com.ryanair.interconnections.api.controller;
 
 import com.ryanair.interconnections.api.model.response.FlightResponse;
-import com.ryanair.interconnections.api.service.InterconnectionsService;
+import com.ryanair.interconnections.api.service.InterconnectionsOneStopService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,10 +16,10 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class InterconnectionsController {
 
-    private final InterconnectionsService interconnectionsService;
+    private final InterconnectionsOneStopService interconnectionsOneStopService;
 
-    public InterconnectionsController(InterconnectionsService interconnectionsService) {
-        this.interconnectionsService = interconnectionsService;
+    public InterconnectionsController(InterconnectionsOneStopService interconnectionsOneStopService) {
+        this.interconnectionsOneStopService = interconnectionsOneStopService;
     }
 
     /**
@@ -37,7 +37,7 @@ public class InterconnectionsController {
                                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime departureDateTime,
                                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime arrivalDateTime) {
 
-        return interconnectionsService.generateInterconnections(departure, arrival, departureDateTime, arrivalDateTime);
+        return interconnectionsOneStopService.getInterconnections(departure, arrival, departureDateTime, arrivalDateTime);
     }
 
 }

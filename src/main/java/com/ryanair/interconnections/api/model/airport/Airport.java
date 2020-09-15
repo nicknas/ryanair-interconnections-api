@@ -5,6 +5,7 @@ import com.ryanair.interconnections.api.model.route.Route;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -12,7 +13,7 @@ import java.util.List;
  */
 public class Airport {
 
-    private final HashMap<String, Route> routeMap;
+    private final Map<String, Route> routeMap;
 
     public Airport(Route route) {
         this.routeMap = new HashMap<>();
@@ -33,7 +34,7 @@ public class Airport {
      * @param arrival the arrival airport IATA code
      * @return a List of all the interconnected routes
      */
-    public List<Route> findInterconnectedRoutes(HashMap<String, Airport> airportMap, String arrival) {
+    public List<Route> findInterconnectedRoutes(Map<String, Airport> airportMap, String arrival) {
         List<Route> interconnectedRoutes = new ArrayList<>();
         routeMap.forEach((String destination, Route route) -> {
             if (airportMap.get(destination).routeMap.containsKey(arrival)) {
