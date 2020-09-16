@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 /**
  * POJO that represents each schedule of every flight in the interconnections response
  */
-public class ScheduleResponse {
+public class FlightLegResponse {
     private String departureAirport;
     private String arrivalAirport;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
@@ -15,10 +15,10 @@ public class ScheduleResponse {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime arrivalDateTime;
 
-    public ScheduleResponse(String departureAirport,
-                            String arrivalAirport,
-                            LocalDateTime departureDateTime,
-                            LocalDateTime arrivalDateTime) {
+    public FlightLegResponse(String departureAirport,
+                             String arrivalAirport,
+                             LocalDateTime departureDateTime,
+                             LocalDateTime arrivalDateTime) {
         this.departureAirport = departureAirport;
         this.arrivalAirport = arrivalAirport;
         this.departureDateTime = departureDateTime;
