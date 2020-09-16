@@ -16,48 +16,14 @@ import java.util.*;
  * A Service class to do all the operations necessary to search the direct and interconnected flights
  */
 @Service
-public class InterconnectionsOneStopService implements InterconnectionsService{
+public class InterconnectionsOneStopService extends InterconnectionsService{
     private final RoutesOneStopService routesOneStopService;
     private final SchedulesOneStopService schedulesOneStopService;
-
-    /**
-     * Verify if the departure time is not later than the arrival time
-     * @param departureDateTime the departure time
-     * @param arrivalDateTime the arrival time
-     * @throws DepartureAfterArrivalException with bad request code (400) if the departure time is later than the arrival time
-     */
-    private void checkDepartureArrivalTime(LocalDateTime departureDateTime, LocalDateTime arrivalDateTime) throws DepartureAfterArrivalException {
-        if (departureDateTime.isAfter(arrivalDateTime)) {
-            throw new DepartureAfterArrivalException();
-        }
-    }
-
-    /**
-     * Verify if there is, at least, one flight in the search
-     * @param flightResponseList the list of flights as a result of the search
-     * @throws NoFlightsFoundException with not found code (404) if the search does not found any available flight
-     */
-    private void checkEmptyFlightList(List<FlightResponse> flightResponseList) throws NoFlightsFoundException{
-        if (flightResponseList.isEmpty()) {
-            throw new NoFlightsFoundException();
-        }
-    }
-
-    /**
-     * Verify if there is, at least, one route in the search
-     * @param directRoute the only direct route
-     * @param oneStopRoutes a list of one stop routes
-     * @throws NoRoutesFoundException with not found code (404) if the search does not found any available route
-     */
-    private void checkEmptyRoutes(Route directRoute, List<Route> oneStopRoutes) throws NoRoutesFoundException{
-        if (directRoute == null && oneStopRoutes.isEmpty()) {
-            throw new NoRoutesFoundException();
-        }
-    }
 
 
     @Autowired
     public InterconnectionsOneStopService(RoutesOneStopService routesOneStopService, SchedulesOneStopService schedulesOneStopService) {
+        super();
         this.routesOneStopService = routesOneStopService;
         this.schedulesOneStopService = schedulesOneStopService;
     }

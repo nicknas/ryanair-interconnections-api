@@ -7,7 +7,7 @@ import java.util.List;
  */
 public class FlightResponse {
     private int stops;
-    private List<ScheduleResponse> legs;
+    private List<FlightLegResponse> legs;
 
     public int getStops() {
         return stops;
@@ -17,11 +17,11 @@ public class FlightResponse {
         this.stops = stops;
     }
 
-    public List<ScheduleResponse> getLegs() {
+    public List<FlightLegResponse> getLegs() {
         return legs;
     }
 
-    public void setLegs(List<ScheduleResponse> legs) {
+    public void setLegs(List<FlightLegResponse> legs) {
         this.legs = legs;
     }
 }

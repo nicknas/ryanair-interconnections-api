@@ -2,7 +2,7 @@ package com.ryanair.interconnections.api.service;
 
 import com.ryanair.interconnections.api.client.SchedulesClient;
 import com.ryanair.interconnections.api.model.response.FlightResponse;
-import com.ryanair.interconnections.api.model.response.ScheduleResponse;
+import com.ryanair.interconnections.api.model.response.FlightLegResponse;
 import com.ryanair.interconnections.api.model.route.Route;
 import com.ryanair.interconnections.api.model.schedule.Day;
 import com.ryanair.interconnections.api.model.schedule.Flight;
@@ -21,13 +21,11 @@ import java.util.stream.Collectors;
  * Service that makes all the schedule logic in the interconnections service
  */
 @Service
-public class SchedulesOneStopService implements SchedulesService{
-
-    private final SchedulesClient schedulesClient;
+public class SchedulesOneStopService extends SchedulesService{
 
     @Autowired
     public SchedulesOneStopService(SchedulesClient schedulesClient) {
-        this.schedulesClient = schedulesClient;
+        super(schedulesClient);
     }
 
     /**
@@ -54,87 +52,6 @@ public class SchedulesOneStopService implements SchedulesService{
                 && !arrivalDateTimeDepartureAirport.isAfter(arrivalDateTime)
                 && arrivalDateTimeDepartureAirport.until(departureDateTimeArrivalAirport, ChronoUnit.HOURS) >= 2
                 && !arrivalDateTimeArrivalAirport.isAfter(arrivalDateTime);
-    }
-
-    /**
-     * Check if the direct flight is not earlier that the departure time and not later that the arrival time
-     * @param departureDateTime the departure time limit
-     * @param arrivalDateTime the arrival time limit
-     * @param departureDateTimeAux the departure time of the flight
-     * @param arrivalDateTimeAux the arrival time of the flight
-     * @return a boolean result that determines if the direct flight meets with the departure and arrival time
-     */
-    private boolean isValidDirectRouteSchedule(LocalDateTime departureDateTime,
-                                               LocalDateTime arrivalDateTime,
-                                               LocalDateTime departureDateTimeAux,
-                                               LocalDateTime arrivalDateTimeAux) {
-
-        return !departureDateTimeAux.isBefore(departureDateTime) && !arrivalDateTimeAux.isAfter(arrivalDateTime);
-    }
-
-    /**
-     * Make a List of all the direct flights to store in the interconnections response
-     * @param route the direct route
-     * @param departureDateTime the departure time limit
-     * @param arrivalDateTime the arrival time limit
-     * @param departureDateTimeAux the departure time of the direct flight
-     * @return a List of all the direct flights
-     */
-    private List<FlightResponse> getDirectRouteFlights(Route route, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime, LocalDateTime departureDateTimeAux) {
-        List<FlightResponse> flightResponseList = new ArrayList<>();
-
-        // First of all, get the only schedule of the direct route
-        Schedule directSchedule = schedulesClient.getSchedule(route, departureDateTimeAux);
-
-        directSchedule.getDays()
-                .forEach(day -> day.getFlights()
-                .forEach(flight -> addDirectFlightToList(
-                        flightResponseList,
-                        route,
-                        departureDateTime,
-                        arrivalDateTime,
-                        departureDateTimeAux,
-                        day,
-                        flight)));
-
-        return flightResponseList;
-    }
-
-    /**
-     * Add a direct flight to the flight response list, if meets with the requirements
-     * @param flightResponseList the list of flight response
-     * @param route a direct route
-     * @param departureDateTime the departure time
-     * @param arrivalDateTime the arrival time
-     * @param departureDateTimeAux the departure time of the flight to add
-     * @param day a day object that represents the day of the flight
-     * @param flight a flight object that represents the flight to add
-     */
-    private void addDirectFlightToList(List<FlightResponse> flightResponseList,
-                                 Route route,
-                                 LocalDateTime departureDateTime,
-                                 LocalDateTime arrivalDateTime,
-                                 LocalDateTime departureDateTimeAux,
-                                 Day day,
-                                 Flight flight) {
-        ScheduleResponse directFlightResponse = new ScheduleResponse(route.getAirportFrom(),
-                route.getAirportTo(),
-                departureDateTimeAux.withDayOfMonth(day.getDay()).with(flight.getDepartureTime()),
-                departureDateTimeAux.withDayOfMonth(day.getDay()).with(flight.getArrivalTime()));
-
-        if (isValidDirectRouteSchedule(
-                departureDateTime,
-                arrivalDateTime,
-                directFlightResponse.getDepartureDateTime(),
-                directFlightResponse.getArrivalDateTime())) {
-
-            FlightResponse flightResponse = new FlightResponse();
-            flightResponse.setStops(0);
-            List<ScheduleResponse> scheduleResponseList = new ArrayList<>();
-            scheduleResponseList.add(directFlightResponse);
-            flightResponse.setLegs(scheduleResponseList);
-            flightResponseList.add(flightResponse);
-        }
     }
 
     /**
@@ -216,12 +133,12 @@ public class SchedulesOneStopService implements SchedulesService{
                                         Flight secondLegFlight) {
 
 
-        ScheduleResponse firstLegFlightResponse = new ScheduleResponse(firstLegRoute.getAirportFrom(),
+        FlightLegResponse firstLegFlightResponse = new FlightLegResponse(firstLegRoute.getAirportFrom(),
                 firstLegRoute.getAirportTo(),
                 departureDateTimeAux.withDayOfMonth(firstLegDay.getDay()).with(firsLegFlight.getDepartureTime()),
                 departureDateTimeAux.withDayOfMonth(firstLegDay.getDay()).with(firsLegFlight.getArrivalTime()));
 
-        ScheduleResponse secondLegFlightResponse = new ScheduleResponse(secondLegRoute.getAirportFrom(),
+        FlightLegResponse secondLegFlightResponse = new FlightLegResponse(secondLegRoute.getAirportFrom(),
                 secondLegRoute.getAirportTo(),
                 departureDateTimeAux.withDayOfMonth(secondLegDay.getDay()).with(secondLegFlight.getDepartureTime()),
                 departureDateTimeAux.withDayOfMonth(secondLegDay.getDay()).with(secondLegFlight.getArrivalTime()));
@@ -237,7 +154,7 @@ public class SchedulesOneStopService implements SchedulesService{
             FlightResponse flightResponse = new FlightResponse();
             flightResponse.setStops(1);
 
-            List<ScheduleResponse> allLegsList = new ArrayList<>();
+            List<FlightLegResponse> allLegsList = new ArrayList<>();
 
             allLegsList.add(firstLegFlightResponse);
             allLegsList.add(secondLegFlightResponse);
