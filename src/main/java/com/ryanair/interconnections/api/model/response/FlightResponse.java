@@ -9,6 +9,11 @@ public class FlightResponse {
     private int stops;
     private List<FlightLegResponse> legs;
 
+    public FlightResponse(int stops, List<FlightLegResponse> legs) {
+        this.stops = stops;
+        this.legs = legs;
+    }
+
     public int getStops() {
         return stops;
     }

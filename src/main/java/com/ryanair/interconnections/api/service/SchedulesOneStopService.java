@@ -4,8 +4,6 @@ import com.ryanair.interconnections.api.client.SchedulesClient;
 import com.ryanair.interconnections.api.model.response.FlightResponse;
 import com.ryanair.interconnections.api.model.response.FlightLegResponse;
 import com.ryanair.interconnections.api.model.route.Route;
-import com.ryanair.interconnections.api.model.schedule.Day;
-import com.ryanair.interconnections.api.model.schedule.Flight;
 import com.ryanair.interconnections.api.model.schedule.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,134 +34,72 @@ public class SchedulesOneStopService extends SchedulesService{
      *
      * @param departureDateTime the departure time limit
      * @param arrivalDateTime the arrival time limit
-     * @param departureDateTimeDepartureAirport the departure time of the first leg flight
-     * @param arrivalDateTimeDepartureAirport the arrival time of the first leg flight
-     * @param departureDateTimeArrivalAirport the departure time of the second leg flight
-     * @param arrivalDateTimeArrivalAirport the arrival time of the second leg flight
+     * @param firstLegDepartureDateTime the departure time of the first leg flight
+     * @param firstLegArrivalDateTime the arrival time of the first leg flight
+     * @param secondLegDepartureDateTime the departure time of the second leg flight
+     * @param secondLegArrivalDateTime the arrival time of the second leg flight
      * @return a boolean result that determines if the one stop flights meet with the requirements above
      */
-    private boolean isValidOneStopSchedule(LocalDateTime departureDateTime,
+    private boolean isValidOneStopFlight(LocalDateTime departureDateTime,
                                                         LocalDateTime arrivalDateTime,
-                                                        LocalDateTime departureDateTimeDepartureAirport,
-                                                        LocalDateTime arrivalDateTimeDepartureAirport,
-                                                        LocalDateTime departureDateTimeArrivalAirport,
-                                                        LocalDateTime arrivalDateTimeArrivalAirport) {
+                                                        LocalDateTime firstLegDepartureDateTime,
+                                                        LocalDateTime firstLegArrivalDateTime,
+                                                        LocalDateTime secondLegDepartureDateTime,
+                                                        LocalDateTime secondLegArrivalDateTime) {
 
-        return !departureDateTimeDepartureAirport.isBefore(departureDateTime)
-                && !arrivalDateTimeDepartureAirport.isAfter(arrivalDateTime)
-                && arrivalDateTimeDepartureAirport.until(departureDateTimeArrivalAirport, ChronoUnit.HOURS) >= 2
-                && !arrivalDateTimeArrivalAirport.isAfter(arrivalDateTime);
+        return !firstLegDepartureDateTime.isBefore(departureDateTime)
+                && !firstLegArrivalDateTime.isAfter(arrivalDateTime)
+                && firstLegArrivalDateTime.until(secondLegDepartureDateTime, ChronoUnit.HOURS) >= 2
+                && !secondLegArrivalDateTime.isAfter(arrivalDateTime);
     }
 
     /**
      * Make a List of all the one stop flights to store in the interconnections response
      *
-     * @param routes a list of interconnected routes
-     * @param departureAirport the departure airport IATA code
-     * @param arrivalAirport the arrival airport IATA code
+     * @param oneStopRoutes a list of one stop routes
      * @param departureDateTime the departure time limit
      * @param arrivalDateTime the arrival time limit
      * @param departureDateTimeAux the departure time of the one stop flights
      * @return a List of all the one stop flights
      */
-    private List<FlightResponse> getOneStopFlights(List<Route> routes, String departureAirport, String arrivalAirport, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime, LocalDateTime departureDateTimeAux) {
-        List<FlightResponse> flightResponseList = new ArrayList<>();
+    private List<FlightResponse> getOneStopFlights(List<List<Route>> oneStopRoutes, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime, LocalDateTime departureDateTimeAux) {
+        return oneStopRoutes.parallelStream()
+                .flatMap(oneStopRoute -> {
+                    Route firstLegRoute = oneStopRoute.get(0);
+                    Route secondLegRoute = oneStopRoute.get(1);
 
-        // Separate the list into a list of first leg routes and a list of second leg routes
-        List<Route> firstLegRoutes = routes
-                .stream()
-                .filter(route -> route.getAirportFrom().equals(departureAirport))
+                    // Get a schedule of each route
+                    Schedule firstLegSchedule = schedulesClient.getSchedule(firstLegRoute, departureDateTimeAux);
+                    Schedule secondLegSchedule = schedulesClient.getSchedule(secondLegRoute, departureDateTimeAux);
+
+                    return firstLegSchedule.getDays()
+                            .stream()
+                            .flatMap(firstLegDay -> firstLegDay.getFlights()
+                            .stream()
+                            .flatMap(firstLegFlight -> secondLegSchedule.getDays()
+                            .stream()
+                            .flatMap(secondLegDay -> secondLegDay.getFlights()
+                            .stream()
+                            .map(secondLegFlight -> new FlightResponse(1, Arrays.asList(
+                                    new FlightLegResponse(firstLegRoute.getAirportFrom(),
+                                            firstLegRoute.getAirportTo(),
+                                            departureDateTimeAux.withDayOfMonth(firstLegDay.getDay()).with(firstLegFlight.getDepartureTime()),
+                                            departureDateTimeAux.withDayOfMonth(firstLegDay.getDay()).with(firstLegFlight.getArrivalTime())),
+                                    new FlightLegResponse(secondLegRoute.getAirportFrom(),
+                                            secondLegRoute.getAirportTo(),
+                                            departureDateTimeAux.withDayOfMonth(secondLegDay.getDay()).with(secondLegFlight.getDepartureTime()),
+                                            departureDateTimeAux.withDayOfMonth(secondLegDay.getDay()).with(secondLegFlight.getArrivalTime())))))
+                            )));
+
+                })
+                .filter(flightResponse -> isValidOneStopFlight(
+                        departureDateTime,
+                        arrivalDateTime,
+                        flightResponse.getLegs().get(0).getDepartureDateTime(),
+                        flightResponse.getLegs().get(0).getArrivalDateTime(),
+                        flightResponse.getLegs().get(1).getDepartureDateTime(),
+                        flightResponse.getLegs().get(1).getArrivalDateTime()))
                 .collect(Collectors.toList());
-        List<Route> secondLegRoutes = routes
-                .stream()
-                .filter(route -> route.getAirportTo().equals(arrivalAirport))
-                .collect(Collectors.toList());
-
-        // Each of the indexes matches with the complete route, so iterate over the same loop
-        for (int i = 0; i < firstLegRoutes.size(); i++) {
-            Route firstLegRoute = firstLegRoutes.get(i);
-            Route secondLegRoute = secondLegRoutes.get(i);
-
-            // Get a schedule of each route
-            Schedule firstLegSchedule = schedulesClient.getSchedule(firstLegRoute, departureDateTimeAux);
-            Schedule secondLegSchedule = schedulesClient.getSchedule(secondLegRoute, departureDateTimeAux);
-
-            firstLegSchedule
-                    .getDays()
-                    .forEach(firstLegDay -> firstLegDay.getFlights()
-                    .forEach(firstLegFlight -> secondLegSchedule.getDays()
-                    .forEach(secondLegDay -> secondLegDay.getFlights()
-                    .forEach(secondLegFlight -> addOneStopFlightToList(
-                            flightResponseList,
-                            firstLegRoute,
-                            secondLegRoute,
-                            departureDateTime,
-                            arrivalDateTime,
-                            departureDateTimeAux,
-                            firstLegDay,
-                            secondLegDay,
-                            firstLegFlight,
-                            secondLegFlight)))));
-        }
-
-        return flightResponseList;
-    }
-
-    /**
-     * Add a one stop flight to the flight response list, if meets with the requirements
-     * @param flightResponseList the list of flight response
-     * @param firstLegRoute the route of the first leg
-     * @param secondLegRoute the route of the second leg
-     * @param departureDateTime the departure time
-     * @param arrivalDateTime the arrival time
-     * @param departureDateTimeAux the departure time of the flight to add
-     * @param firstLegDay a day object that represents the day of the first leg flight
-     * @param secondLegDay a day object that represents the day of the second leg flight
-     * @param firsLegFlight a flight object that represents the first leg flight to add
-     * @param secondLegFlight a flight object that represents the second leg flight to add
-     */
-    private void addOneStopFlightToList(List<FlightResponse> flightResponseList,
-                                        Route firstLegRoute,
-                                        Route secondLegRoute,
-                                        LocalDateTime departureDateTime,
-                                        LocalDateTime arrivalDateTime,
-                                        LocalDateTime departureDateTimeAux,
-                                        Day firstLegDay,
-                                        Day secondLegDay,
-                                        Flight firsLegFlight,
-                                        Flight secondLegFlight) {
-
-
-        FlightLegResponse firstLegFlightResponse = new FlightLegResponse(firstLegRoute.getAirportFrom(),
-                firstLegRoute.getAirportTo(),
-                departureDateTimeAux.withDayOfMonth(firstLegDay.getDay()).with(firsLegFlight.getDepartureTime()),
-                departureDateTimeAux.withDayOfMonth(firstLegDay.getDay()).with(firsLegFlight.getArrivalTime()));
-
-        FlightLegResponse secondLegFlightResponse = new FlightLegResponse(secondLegRoute.getAirportFrom(),
-                secondLegRoute.getAirportTo(),
-                departureDateTimeAux.withDayOfMonth(secondLegDay.getDay()).with(secondLegFlight.getDepartureTime()),
-                departureDateTimeAux.withDayOfMonth(secondLegDay.getDay()).with(secondLegFlight.getArrivalTime()));
-
-        if (isValidOneStopSchedule(
-                departureDateTime,
-                arrivalDateTime,
-                firstLegFlightResponse.getDepartureDateTime(),
-                firstLegFlightResponse.getArrivalDateTime(),
-                secondLegFlightResponse.getDepartureDateTime(),
-                secondLegFlightResponse.getArrivalDateTime())) {
-
-            FlightResponse flightResponse = new FlightResponse();
-            flightResponse.setStops(1);
-
-            List<FlightLegResponse> allLegsList = new ArrayList<>();
-
-            allLegsList.add(firstLegFlightResponse);
-            allLegsList.add(secondLegFlightResponse);
-
-            flightResponse.setLegs(allLegsList);
-            flightResponseList.add(flightResponse);
-        }
-
     }
 
     /**
@@ -177,7 +114,7 @@ public class SchedulesOneStopService extends SchedulesService{
      * @return a list of all the flights searched
      */
     @Override
-    public List<FlightResponse> getFlightsForRoutes(List<Route> oneStopRoutes, Route directRoute, String departureAirport, String arrivalAirport, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime) {
+    public List<FlightResponse> getFlightsForRoutes(List<List<Route>> oneStopRoutes, Route directRoute, String departureAirport, String arrivalAirport, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime) {
         Period dateInterval = departureDateTime.toLocalDate().until(arrivalDateTime.toLocalDate());
         LocalDateTime departureDateTimeAux = departureDateTime;
 
@@ -191,7 +128,7 @@ public class SchedulesOneStopService extends SchedulesService{
                 if (directRoute != null) {
                     directFlightResponseList.addAll(getDirectRouteFlights(directRoute, departureDateTime, arrivalDateTime, departureDateTimeAux));
                 }
-                oneStopFlightResponseList.addAll(getOneStopFlights(oneStopRoutes, departureAirport, arrivalAirport, departureDateTime, arrivalDateTime, departureDateTimeAux));
+                oneStopFlightResponseList.addAll(getOneStopFlights(oneStopRoutes, departureDateTime, arrivalDateTime, departureDateTimeAux));
 
                 departureDateTimeAux = departureDateTimeAux.plusMonths(1);
             }

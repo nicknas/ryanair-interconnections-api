@@ -42,11 +42,11 @@ public abstract class InterconnectionsService {
     /**
      * Verify if there is, at least, one route in the search
      * @param directRoute the only direct route
-     * @param oneStopRoutes a list of one stop routes
+     * @param routes a list of interconnected routes
      * @throws NoRoutesFoundException with not found code (404) if the search does not found any available route
      */
-    protected void checkEmptyRoutes(Route directRoute, List<Route> oneStopRoutes) throws NoRoutesFoundException{
-        if (directRoute == null && oneStopRoutes.isEmpty()) {
+    protected void checkEmptyRoutes(Route directRoute, List<List<Route>> routes) throws NoRoutesFoundException{
+        if (directRoute == null && routes.isEmpty()) {
             throw new NoRoutesFoundException();
         }
     }

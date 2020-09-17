@@ -75,5 +75,5 @@ public abstract class RoutesService {
                 .orElse(null);
     }
 
-    abstract List<Route> getInterconnectedRoutes(String departure, String arrival);
+    abstract List<List<Route>> getInterconnectedRoutes(String departure, String arrival);
 }
