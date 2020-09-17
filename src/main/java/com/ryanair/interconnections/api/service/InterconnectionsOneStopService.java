@@ -1,8 +1,5 @@
 package com.ryanair.interconnections.api.service;
 
-import com.ryanair.interconnections.api.exception.DepartureAfterArrivalException;
-import com.ryanair.interconnections.api.exception.NoFlightsFoundException;
-import com.ryanair.interconnections.api.exception.NoRoutesFoundException;
 import com.ryanair.interconnections.api.model.response.FlightResponse;
 import com.ryanair.interconnections.api.model.route.Route;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,14 +42,14 @@ public class InterconnectionsOneStopService extends InterconnectionsService{
 
         // Get a direct route if available
         Route directRoute = routesOneStopService.getDirectRoute(departure, arrival);
-        List<Route> interconnectedRoutes= routesOneStopService.getInterconnectedRoutes(departure, arrival);
+        List<List<Route>> oneStopRoutes = routesOneStopService.getInterconnectedRoutes(departure, arrival);
 
         // Check if there are no routes available
-        checkEmptyRoutes(directRoute, interconnectedRoutes);
+        checkEmptyRoutes(directRoute, oneStopRoutes);
 
         // Get all the flights
         List<FlightResponse> allFlights = schedulesOneStopService.getFlightsForRoutes(
-                interconnectedRoutes,
+                oneStopRoutes,
                 directRoute,
                 departure,
                 arrival,

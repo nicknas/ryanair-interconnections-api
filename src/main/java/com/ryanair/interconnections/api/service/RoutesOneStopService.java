@@ -1,16 +1,11 @@
 package com.ryanair.interconnections.api.service;
 
 import com.ryanair.interconnections.api.client.RoutesClient;
-import com.ryanair.interconnections.api.model.airport.Airport;
 import com.ryanair.interconnections.api.model.route.Route;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -31,19 +26,16 @@ public class RoutesOneStopService extends RoutesService{
      * @return a list of all the interconnected routes
      */
     @Override
-    public List<Route> getInterconnectedRoutes(String departure, String arrival) {
+    public List<List<Route>> getInterconnectedRoutes(String departure, String arrival) {
         // Search all the routes to store each route to the airports map
         routesClient
                 .getRoutes()
                 .stream()
                 .filter(route -> filterValidRoutes(route.getConnectingAirport(), route.getOperator()))
-                .forEach(validRoute -> addRouteToAirportMap(validRoute));
+                .forEach(this::addRouteToAirportMap);
 
-        if (airportMap.containsKey(departure)) {
-            return airportMap.get(departure).findInterconnectedRoutes(airportMap, arrival);
-        }
-        else {
-            return new ArrayList<>();
-        }
+        return airportMap.containsKey(departure) ?
+                airportMap.get(departure).findInterconnectedRoutes(airportMap, arrival) :
+                new ArrayList<>();
     }
 }

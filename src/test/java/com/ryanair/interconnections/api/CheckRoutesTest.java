@@ -41,10 +41,10 @@ public class CheckRoutesTest {
 
     @Test
     public void checkInvalidRoutes() {
-        for (int i = 0; i < invalidDepartureAirports.length; i++) {
-            for (int j = 0; j < invalidArrivalAirports.length; j++) {
-                List<Route> oneStopRoutes = routesService.getInterconnectedRoutes(invalidDepartureAirports[i], invalidArrivalAirports[j]);
-                Route directRoute = routesService.getDirectRoute(invalidDepartureAirports[i], invalidArrivalAirports[j]);
+        for (String invalidDepartureAirport : invalidDepartureAirports) {
+            for (String invalidArrivalAirport : invalidArrivalAirports) {
+                List<List<Route>> oneStopRoutes = routesService.getInterconnectedRoutes(invalidDepartureAirport, invalidArrivalAirport);
+                Route directRoute = routesService.getDirectRoute(invalidDepartureAirport, invalidArrivalAirport);
 
                 Assertions.assertNull(directRoute);
                 Assertions.assertEquals(0, oneStopRoutes.size());
@@ -54,19 +54,19 @@ public class CheckRoutesTest {
 
     @Test
     public void checkRoutesMADDUB() {
-        List<Route> oneStopRoutes = routesService.getInterconnectedRoutes(madAirport, dubAirport);
+        List<List<Route>> oneStopRoutes = routesService.getInterconnectedRoutes(madAirport, dubAirport);
         Route directRoute = routesService.getDirectRoute(madAirport, dubAirport);
 
         Assertions.assertNotNull(directRoute);
-        Assertions.assertEquals(interconnectedAirportsMADDUB * 2, oneStopRoutes.size());
+        Assertions.assertEquals(interconnectedAirportsMADDUB, oneStopRoutes.size());
     }
 
     @Test
     public void checkRoutesWROMAD() {
-        List<Route> oneStopRoutes = routesService.getInterconnectedRoutes(wroAirport, madAirport);
+        List<List<Route>> oneStopRoutes = routesService.getInterconnectedRoutes(wroAirport, madAirport);
         Route directRoute = routesService.getDirectRoute(wroAirport, madAirport);
 
         Assertions.assertNotNull(directRoute);
-        Assertions.assertEquals(interconnectedAirportsMADWRO * 2, oneStopRoutes.size());
+        Assertions.assertEquals(interconnectedAirportsMADWRO, oneStopRoutes.size());
     }
 }
