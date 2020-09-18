@@ -41,17 +41,17 @@ public class CheckNumberOfFlightsTest {
                 "DUB",
                 "DUB"};
         departureTime = new LocalDateTime[]{
-                LocalDateTime.parse("2020-09-17T06:00"),
-                LocalDateTime.parse("2020-09-17T06:00"),
-                LocalDateTime.parse("2020-09-17T06:00"),
-                LocalDateTime.parse("2020-09-17T06:00")
+                LocalDateTime.parse("2020-09-25T06:00"),
+                LocalDateTime.parse("2020-09-25T06:00"),
+                LocalDateTime.parse("2020-09-25T06:00"),
+                LocalDateTime.parse("2020-09-25T06:00")
         };
         arrivalTime = new LocalDateTime[]{
-                LocalDateTime.parse("2020-09-17T21:00"),
-                LocalDateTime.parse("2020-09-17T18:00"),
-                LocalDateTime.parse("2020-09-17T18:00"),
-                LocalDateTime.parse("2020-10-17T18:00")};
-        expectedNumberOfFlights = new int[]{1, 2, 15, 17975};
+                LocalDateTime.parse("2020-09-25T21:00"),
+                LocalDateTime.parse("2020-09-25T21:00"),
+                LocalDateTime.parse("2020-09-25T18:00"),
+                LocalDateTime.parse("2020-10-25T18:00")};
+        expectedNumberOfFlights = new int[]{2, 2, 10, 23972};
     }
 
     @Test
