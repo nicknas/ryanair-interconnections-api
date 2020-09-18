@@ -76,41 +76,37 @@ public class CheckInvalidFlightsTest {
 
     @Test
     public void checkNoRoutesFoundException() {
-        NoRoutesFoundException noRoutesFoundException = Assertions.assertThrows(NoRoutesFoundException.class, () -> {
-            for (int i = 0; i < invalidDepartureAirports.length; i++) {
-                interconnectionsOneStopService.getInterconnections(
-                        invalidDepartureAirports[i],
-                        invalidArrivalAirports[i],
-                        departureTimes[i],
-                        arrivalTimes[i]);
-            }
-        });
+        for (int i = 0; i < invalidDepartureAirports.length; i++) {
+            int index = i;
+            Assertions.assertThrows(NoRoutesFoundException.class, () -> interconnectionsOneStopService.getInterconnections(
+                    invalidDepartureAirports[index],
+                    invalidArrivalAirports[index],
+                    departureTimes[index],
+                    arrivalTimes[index]));
+        }
     }
 
     @Test
     public void checkDepartureAfterArrivalException() {
-        DepartureAfterArrivalException departureAfterArrivalException = Assertions.assertThrows(DepartureAfterArrivalException.class, () -> {
-            for (int i = 0; i < departureAirports.length; i++) {
-                interconnectionsOneStopService.getInterconnections(
-                        departureAirports[i],
-                        arrivalAirports[i],
-                        invalidDepartureTimes[i],
-                        invalidArrivalTimes[i]);
-            }
-        });
+        for (int i = 0; i < departureAirports.length; i++) {
+            int index = i;
+            Assertions.assertThrows(DepartureAfterArrivalException.class, () -> interconnectionsOneStopService.getInterconnections(
+                    departureAirports[index],
+                    arrivalAirports[index],
+                    invalidDepartureTimes[index],
+                    invalidArrivalTimes[index]));
+        }
     }
 
     @Test
     public void checkNoFlightsFoundException() {
-        NoFlightsFoundException departureAfterArrivalException = Assertions.assertThrows(NoFlightsFoundException.class, () -> {
-            for (int i = 0; i < noFlightsDepartureAirports.length; i++) {
-                interconnectionsOneStopService.getInterconnections(
-                        noFlightsDepartureAirports[i],
-                        noFlightsArrivalAirports[i],
-                        noFlightsDepartureTimes[i],
-                        noFlightsArrivalTimes[i]);
-            }
-        });
+        for (int i = 0; i < noFlightsDepartureAirports.length; i++) {
+            int index = i;
+            Assertions.assertThrows(NoFlightsFoundException.class, () -> interconnectionsOneStopService.getInterconnections(
+                    noFlightsDepartureAirports[index],
+                    noFlightsArrivalAirports[index],
+                    noFlightsDepartureTimes[index],
+                    noFlightsArrivalTimes[index]));
+        }
     }
-
 }
