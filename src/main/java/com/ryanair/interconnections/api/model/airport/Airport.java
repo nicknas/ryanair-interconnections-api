@@ -3,6 +3,7 @@ package com.ryanair.interconnections.api.model.airport;
 import com.ryanair.interconnections.api.model.route.Route;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -32,13 +33,10 @@ public class Airport {
      * @return a List of all the interconnected routes
      */
     public List<List<Route>> findInterconnectedRoutes(Map<String, Airport> airportMap, String arrival) {
-        List<List<Route>> interconnectedRoutes = new ArrayList<>();
-        routeMap.forEach((String destination, Route route) -> {
-            if (airportMap.get(destination).routeMap.containsKey(arrival)) {
-                interconnectedRoutes.add(Arrays.asList(route, airportMap.get(destination).routeMap.get(arrival)));
-            }
-        });
-
-        return interconnectedRoutes;
+        return routeMap.entrySet()
+                .stream()
+                .filter(entry -> airportMap.get(entry.getKey()).routeMap.containsKey(arrival))
+                .map(entry -> Arrays.asList(entry.getValue(), airportMap.get(entry.getKey()).routeMap.get(arrival)))
+                .collect(Collectors.toList());
     }
 }
