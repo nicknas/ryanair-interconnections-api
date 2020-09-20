@@ -4,6 +4,7 @@ import com.ryanair.interconnections.api.client.SchedulesClient;
 import com.ryanair.interconnections.api.model.response.FlightLegResponse;
 import com.ryanair.interconnections.api.model.response.FlightResponse;
 import com.ryanair.interconnections.api.model.route.Route;
+import com.ryanair.interconnections.api.model.schedule.Flight;
 import com.ryanair.interconnections.api.model.schedule.Schedule;
 
 import java.time.LocalDateTime;
@@ -34,6 +35,26 @@ public abstract class SchedulesService {
     }
 
     /**
+     * Given one route and one date time, get all the flights that matches the parameters
+     * @param route the route to search all the schedules
+     * @param dateTime the date time to search all the schedules
+     * @return a list of all the flights for a route and date time
+     */
+    protected List<FlightLegResponse> getFlightsForARoute(Route route, LocalDateTime dateTime) {
+        return schedulesClient
+                .getSchedule(route, dateTime).getDays()
+                .stream()
+                .flatMap(day -> day.getFlights()
+                .stream()
+                .map(flight -> new FlightLegResponse(
+                        route.getAirportFrom(),
+                        route.getAirportTo(),
+                        dateTime.withDayOfMonth(day.getDay()).with(flight.getDepartureTime()),
+                        dateTime.withDayOfMonth(day.getDay()).with(flight.getArrivalTime()))))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Make a List of all the direct flights to store in the interconnections response
      * @param route the direct route
      * @param departureDateTime the departure time limit
@@ -42,17 +63,10 @@ public abstract class SchedulesService {
      * @return a List of all the direct flights
      */
     protected List<FlightResponse> getDirectRouteFlights(Route route, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime, LocalDateTime departureDateTimeAux) {
-        // First of all, get the only schedule of the direct route
-        Schedule directSchedule = schedulesClient.getSchedule(route, departureDateTimeAux);
 
-        return directSchedule.getDays()
+        return getFlightsForARoute(route, departureDateTimeAux)
                 .stream()
-                .flatMap(day -> day.getFlights()
-                .stream()
-                .map(flight -> new FlightResponse(0, Collections.singletonList(new FlightLegResponse(route.getAirportFrom(),
-                        route.getAirportTo(),
-                        departureDateTimeAux.withDayOfMonth(day.getDay()).with(flight.getDepartureTime()),
-                        departureDateTimeAux.withDayOfMonth(day.getDay()).with(flight.getArrivalTime()))))))
+                .map(directFlight -> new FlightResponse(0, Collections.singletonList(directFlight)))
                 .filter(flightResponse -> isValidDirectFlight(
                         departureDateTime,
                         arrivalDateTime,
@@ -66,5 +80,5 @@ public abstract class SchedulesService {
         this.schedulesClient = schedulesClient;
     }
 
-    abstract List<FlightResponse> getFlightsForRoutes(List<List<Route>> routes, Route directRoute, String departureAirport, String arrivalAirport, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime);
+    abstract List<FlightResponse> getAllFlights(List<List<Route>> routes, Route directRoute, String departureAirport, String arrivalAirport, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime);
 }

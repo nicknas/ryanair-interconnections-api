@@ -28,7 +28,7 @@ public class RoutesClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToFlux(Route.class)
-                .buffer()
-                .blockFirst();
+                .collectList()
+                .block();
     }
 }
