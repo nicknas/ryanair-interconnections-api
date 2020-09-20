@@ -48,7 +48,7 @@ public class InterconnectionsOneStopService extends InterconnectionsService{
         checkEmptyRoutes(directRoute, oneStopRoutes);
 
         // Get all the flights
-        List<FlightResponse> allFlights = schedulesOneStopService.getFlightsForRoutes(
+        List<FlightResponse> allFlights = schedulesOneStopService.getAllFlights(
                 oneStopRoutes,
                 directRoute,
                 departure,

@@ -68,28 +68,14 @@ public class SchedulesOneStopService extends SchedulesService{
                     Route firstLegRoute = oneStopRoute.get(0);
                     Route secondLegRoute = oneStopRoute.get(1);
 
-                    // Get a schedule of each route
-                    Schedule firstLegSchedule = schedulesClient.getSchedule(firstLegRoute, departureDateTimeAux);
-                    Schedule secondLegSchedule = schedulesClient.getSchedule(secondLegRoute, departureDateTimeAux);
+                    List<FlightLegResponse> firstLegList = getFlightsForARoute(firstLegRoute, departureDateTimeAux);
+                    List<FlightLegResponse> secondLegList = getFlightsForARoute(secondLegRoute, departureDateTimeAux);
 
-                    return firstLegSchedule.getDays()
+                    return firstLegList
                             .stream()
-                            .flatMap(firstLegDay -> firstLegDay.getFlights()
+                            .flatMap(firstLeg -> secondLegList
                             .stream()
-                            .flatMap(firstLegFlight -> secondLegSchedule.getDays()
-                            .stream()
-                            .flatMap(secondLegDay -> secondLegDay.getFlights()
-                            .stream()
-                            .map(secondLegFlight -> new FlightResponse(1, Arrays.asList(
-                                    new FlightLegResponse(firstLegRoute.getAirportFrom(),
-                                            firstLegRoute.getAirportTo(),
-                                            departureDateTimeAux.withDayOfMonth(firstLegDay.getDay()).with(firstLegFlight.getDepartureTime()),
-                                            departureDateTimeAux.withDayOfMonth(firstLegDay.getDay()).with(firstLegFlight.getArrivalTime())),
-                                    new FlightLegResponse(secondLegRoute.getAirportFrom(),
-                                            secondLegRoute.getAirportTo(),
-                                            departureDateTimeAux.withDayOfMonth(secondLegDay.getDay()).with(secondLegFlight.getDepartureTime()),
-                                            departureDateTimeAux.withDayOfMonth(secondLegDay.getDay()).with(secondLegFlight.getArrivalTime())))))
-                            )));
+                            .map(secondLeg -> new FlightResponse(1, Arrays.asList(firstLeg, secondLeg))));
 
                 })
                 .filter(flightResponse -> isValidOneStopFlight(
@@ -114,7 +100,7 @@ public class SchedulesOneStopService extends SchedulesService{
      * @return a list of all the flights searched
      */
     @Override
-    public List<FlightResponse> getFlightsForRoutes(List<List<Route>> oneStopRoutes, Route directRoute, String departureAirport, String arrivalAirport, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime) {
+    public List<FlightResponse> getAllFlights(List<List<Route>> oneStopRoutes, Route directRoute, String departureAirport, String arrivalAirport, LocalDateTime departureDateTime, LocalDateTime arrivalDateTime) {
         Period dateInterval = departureDateTime.toLocalDate().until(arrivalDateTime.toLocalDate());
         LocalDateTime departureDateTimeAux = departureDateTime;
 
