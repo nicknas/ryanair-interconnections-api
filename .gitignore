@@ -3,3 +3,7 @@ target/
 .idea/
 .vscode/
 *.iml
+.settings/
+.classpath
+.factorypath
+.project

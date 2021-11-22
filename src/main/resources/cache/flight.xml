@@ -1,0 +1,7 @@
+<infinispan>
+    <cache-container>
+        <distributed-cache name="flight" mode="SYNC">
+            <encoding media-type="application/x-protostream"/>
+        </distributed-cache>
+    </cache-container>
+</infinispan>

@@ -2,6 +2,9 @@ package com.ryanair.interconnections.api.model.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import org.infinispan.protostream.annotations.ProtoFactory;
+import org.infinispan.protostream.annotations.ProtoField;
+
 import java.time.LocalDateTime;
 
 /**
@@ -15,6 +18,7 @@ public class FlightLegResponse {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime arrivalDateTime;
 
+    @ProtoFactory
     public FlightLegResponse(String departureAirport,
                              String arrivalAirport,
                              LocalDateTime departureDateTime,
@@ -25,6 +29,7 @@ public class FlightLegResponse {
         this.arrivalDateTime = arrivalDateTime;
     }
 
+    @ProtoField(number = 1, required = true)
     public String getDepartureAirport() {
         return departureAirport;
     }
@@ -33,6 +38,7 @@ public class FlightLegResponse {
         this.departureAirport = departureAirport;
     }
 
+    @ProtoField(number = 2, required = true)
     public String getArrivalAirport() {
         return arrivalAirport;
     }
@@ -41,6 +47,7 @@ public class FlightLegResponse {
         this.arrivalAirport = arrivalAirport;
     }
 
+    @ProtoField(number = 3, required = true)
     public LocalDateTime getDepartureDateTime() {
         return departureDateTime;
     }
@@ -49,6 +56,7 @@ public class FlightLegResponse {
         this.departureDateTime = departureDateTime;
     }
 
+    @ProtoField(number = 4, required = true)
     public LocalDateTime getArrivalDateTime() {
         return arrivalDateTime;
     }

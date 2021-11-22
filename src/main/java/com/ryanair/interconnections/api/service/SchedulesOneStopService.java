@@ -2,9 +2,11 @@ package com.ryanair.interconnections.api.service;
 
 import com.ryanair.interconnections.api.client.SchedulesClient;
 import com.ryanair.interconnections.api.model.response.FlightResponse;
+import com.ryanair.interconnections.api.model.response.InterconnectionResponse;
 import com.ryanair.interconnections.api.model.response.FlightLegResponse;
 import com.ryanair.interconnections.api.model.route.Route;
-import com.ryanair.interconnections.api.model.schedule.Schedule;
+import com.ryanair.interconnections.cache.repo.FlightRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class SchedulesOneStopService extends SchedulesService{
+
+    @Autowired
+    private FlightRepository repository;
 
     @Autowired
     public SchedulesOneStopService(SchedulesClient schedulesClient) {
@@ -123,7 +128,7 @@ public class SchedulesOneStopService extends SchedulesService{
 
         allFlightResponseList.addAll(directFlightResponseList);
         allFlightResponseList.addAll(oneStopFlightResponseList);
-
+        repository.insert(departureAirport + arrivalAirport + departureDateTime.toString() + arrivalDateTime.toString(), new InterconnectionResponse(allFlightResponseList));
         return allFlightResponseList;
     }
 }

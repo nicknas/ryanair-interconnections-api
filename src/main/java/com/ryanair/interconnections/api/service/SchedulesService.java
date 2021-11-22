@@ -4,8 +4,6 @@ import com.ryanair.interconnections.api.client.SchedulesClient;
 import com.ryanair.interconnections.api.model.response.FlightLegResponse;
 import com.ryanair.interconnections.api.model.response.FlightResponse;
 import com.ryanair.interconnections.api.model.route.Route;
-import com.ryanair.interconnections.api.model.schedule.Flight;
-import com.ryanair.interconnections.api.model.schedule.Schedule;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -76,7 +74,7 @@ public abstract class SchedulesService {
 
     }
 
-    public SchedulesService(SchedulesClient schedulesClient) {
+    protected SchedulesService(SchedulesClient schedulesClient) {
         this.schedulesClient = schedulesClient;
     }
 
