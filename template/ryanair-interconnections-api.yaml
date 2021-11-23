@@ -156,7 +156,7 @@ objects:
       sourceStrategy:
         from:
           kind: DockerImage
-          name: registry.access.redhat.com/ubi8/openjdk-11
+          name: registry.access.redhat.com/ubi8/openjdk-11:latest
       type: Source
     failedBuildsHistoryLimit: 1
     successfulBuildsHistoryLimit: 0
@@ -183,7 +183,7 @@ parameters:
   value: "master"
 - name: GIT_CONTEXT_DIR
   description: "The path where the application code is under the git repository."
-  value: "src"
+  value: "/"
   required: false
 - name: RHDG_CLUSTER_NAME
   description: "The name of the cluster that this client will connect to. It is needed to automatically configure ssl."
