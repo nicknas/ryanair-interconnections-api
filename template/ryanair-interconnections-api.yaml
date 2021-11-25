@@ -103,8 +103,9 @@ objects:
             httpGet:
               path: /ryanair-interconnections-api/health/
               port: 8080
-            failureThreshold: 30
-            periodSeconds: 10
+              httpHeaders:
+                - name: Accept
+                  value: ""
           volumeMounts:
             - name: app-config
               mountPath: "${MOUNT_PATH}/application.properties"
