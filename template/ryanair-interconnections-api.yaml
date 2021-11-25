@@ -101,8 +101,10 @@ objects:
           resources: {}
           livenessProbe:
             httpGet:
-              path: /ryanair-interconnections-api/health
+              path: /ryanair-interconnections-api/health/
               port: 8080
+            failureThreshold: 30
+            periodSeconds: 10
           volumeMounts:
             - name: app-config
               mountPath: "${MOUNT_PATH}/application.properties"
